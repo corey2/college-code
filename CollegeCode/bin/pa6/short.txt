@@ -1,0 +1,10 @@
+Man0: 3 0 1 2
+Man1: 1 2 0 3
+Man2: 1 3 2 0
+Man3: 2 0 3 1
+END
+Woman0: 3 0 2 1
+Woman1: 0 2 1 3
+Woman2: 0 1 2 3
+Woman3: 3 0 2 1
+END

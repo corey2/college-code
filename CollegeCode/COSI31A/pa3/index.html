@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"
+      xml:lang="en"
+      class="single-column">
+<head>
+<title>Brandeis University cs31a: Programming Assignment 3</title>
+<link rel="stylesheet" type="text/css" href="../main.css" />
+<link rel="stylesheet" type="text/css" href="../print.css" media="print" />
+</head>
+<body>
+
+<h1>
+  COSI 31a: Fall 2013
+  <div id="subtitle">Programming Assignment 3</div>
+</h1>
+
+<h2>Contents</h2>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li>
+    <a href="#quickref">Quick Reference</a>
+    <ul>
+      <li><a href="#expected-behavior">Expected Behavior</a></li>
+    </ul>
+  </li>
+  <li><a href="#system-documentation">System Documentation</a></li>
+  <li>
+    <a href="#your-tasks">Your Tasks</a>
+    <ul>
+      <li><a href="#getting-the-code">Getting the Code</a></li>
+      <li><a href="#freemap">Free Map and Bitwise Operations</a></li>
+      <li><a href="#indirection">Indirection</a></li>
+      <li><a href="#implementation-notes">Implementation Notes</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#testing">Testing</a>
+    <ul>
+      <li><a href="#unit-tests">Unit Tests</a></li>
+      <li><a href="#command-interpreter">The Command Interpreter</a></li>
+    </ul>
+  <li><a href="#how-to-submit">How to Submit</a></li>
+</ul>
+
+<h2><a name="overview">Overview</a></h2>
+
+<p>
+  In this project, you will supply modules that complete the design of
+  a simple file system on top of a simulated disk. Your file system
+  provides a standard seek/read/write interface and uses inodes and
+  single-, double-, and triple-indirection to support large files
+  (similar to the class UNIX file system model we learned in class).
+</p>
+
+<p>
+  Your task is to add code for bitwise operations to complete the free
+  space bitmap, and to add indirection to support files larger than 10
+  blocks. There is a large amount of code provided to you in this
+  project, so it will be important to pay attention to interfaces and
+  boundaries between modules to avoid getting overwhelmed by the
+  surrounding code as you add your solution.
+</p>
+
+<h2><a name="quickref">Quick Reference</a></h2>
+
+<h3>Tasks</h3>
+
+<p>
+  You will modify at least the following two files:
+</p>
+
+<ol>
+  <li>
+    <strong class="filename">Bitwise.java</strong>.
+    Finish the following methods using the bitmasks:
+    <ul>
+      <li>public static byte set(int i, byte b)</li>
+      <li>public static void set(int i, byte bytes[])</li>
+      <li>public static byte clear(int i, byte b)</li>
+      <li>public static boolean clear(int i, byte bytes[])</li>
+    </ul>
+  </li>
+  <li>
+    <strong class="filename">MyFileSystem.java</strong>.  Modify
+    <strong class="code">getDirectBlock</strong> to support large
+     files using single-, double-, and triple-indirection.
+  </li>
+</ol>
+
+<p class="warning">
+  You may not modify the following files without first getting
+  permission from your TA:
+  <ul>
+    <li>FileSystem.java</li>
+    <li>Shell.java</li>
+  </ul>
+</p>
+
+<p>
+  You may modify and create other classes / files at your discretion.
+</p>
+
+<h3><a name="expected-behavior">Expected Behavior</a></h3>
+
+<ul>
+  <li>Support large files with single-, double-, and triple-indirection</li>
+  <li>Allow holes in files</li>
+  <li>Pass the tests provided in test_data, Test1.java, Test2.java,
+  and the test embedded in MyFileSystem.java</li>
+  <li>Work even if constants are changed (such as 
+  &quot;buying a bigger disk,&quot; i.e., changing Disk.NUM_BLOCKS)
+</ul>
+
+<p>
+  This list is not a substitute for reading the entire assignment and
+  asking questions.
+</p>
+
+<h2><a name="system-documentation">System Documentation</a></h2>
+
+<p>
+  The file system with which you will be working has a fairly large
+  codebase, including modules for creating a simulated disk,
+  representing different types of disk blocks, and managing free
+  space, as well as the file system itself. You will want to utilize
+  the following references in addition to familiarizing yourself with
+  the source code:
+</p>
+
+<ul>
+  <li><a href="system-design">Design Overview</a></li>
+  <li><a href="src/doc">API reference</a></li>
+</ul>
+
+<h2><a name="your-tasks">Your Tasks</a></h2>
+
+<h3><a name="getting-the-code">Getting the Code</a></h3>
+
+<ul>
+  <li>Download the source code archive <a href="pa3.zip">pa3.zip</a>
+  and unpack it wherever you like.</li>
+  <li>Review all the files, making note of the following (this is not
+  a complete manifest, but describes some of the files that are most
+  important for you to understand first):
+    <ul>
+      <li>You can ignore the folders <strong class="filename">org</strong> and
+        <strong class="filename">junit</strong>. They are an unpacked
+        <a href="http://www.junit.org/">JUnit</a> distribution used by
+      the unit tests. You don't need to know how JUnit works, nor do
+      you need to look in these directories. They are here for your
+      convenience if you want to run the provided tests.</li>
+      <li><strong class="filename">FileSystem.java</strong> contains
+      the File System interface. The Shell and unit tests assume that
+      MyFileSystem implements FileSystem. You may <strong>not</strong>
+      modify FileSystem.java or make MyFileSystem implement a
+      different interface.</li>
+      <li><strong class="filename">MyFileSystem.java</strong> contains
+      an implementation of the FileSystem interface. You will
+      implement indirection to support large files in this file. This
+      file includes a static nested top-level
+      class <strong class="code">DirectBlock</strong> which is of
+      importance when
+      implementing <strong class="code">getDirectBlock</strong>.</li>
+      <li><strong class="filename">Bitwise.java</strong> contains a
+      utility class for doing bitwise operations. You will make some
+      small additions in this file to fix the free map.</li>
+      <li><strong class="filename">FreeMap.java</strong> contains an
+      implementation of a free space bitmap that is stored both in the
+      SuperBlock and in other free space bitmap <em>blocks</em>. You
+      will not need to modify the FreeMap but you need to understand
+      how it works, especially the
+      methods <span class="code">find()</span>, <span class="code">clear(int
+      blockNum)</span>, and <span class="code">save()</span>.</li>
+      <li><strong class="filename">Shell.java</strong> a basic shell
+      that can interact with any FileSystem.</li>
+    </ul>
+  </li>
+  <li>Review what changes you have to make and how to test them.
+    <ul>
+      <li>Fix the Bitwise operations and test it by running
+        <pre class="shell">javac Bitwise.java && java Bitwise</pre>
+      </li>
+      <li>Test your changes with TestBitwise.java</li>
+      <li>Run the Shell and test the File System:
+        <pre class="shell">javac Shell.java && java Shell</pre>
+        notice that it crashes if you try to write to a large file
+      </li>
+      <li>Add indirection in MyFileSystem</li>
+      <li>Use TestMyFileSystem.java to check for regressions</li>
+    </ul>
+  </li>
+</ul>
+
+<h3><a name="freemap">Fix Bitwise</a></h3>
+
+<p>
+  The FreeMap class is already implemented for you. FreeMap relies on
+  methods from the Bitwise utility class. A few methods in Bitwise are
+  unfinished and require you to implement them:
+</p>
+
+<ul>
+  <li>public static byte set(int i, byte b) {}</li>
+  <li>public static void set(int i, byte bytes[]) {}</li>
+  <li>public static byte clear(int i, byte b) {}</li>
+  <li>public static boolean clear(int i, byte bytes[]) {}</li>
+</ul>
+
+<p>
+  See the javadoc comments
+  in <a href="src/Bitwise.java"><span class="filename">Bitwise.java</span></a>
+  for more information about these methods. Remember that
+  &quot;setting&quot; a bit means set it to <b>1</b>, while
+  &quot;clearing&quot; a bit means clear it to
+  <b>0</b>.
+</p>
+
+<p>
+  You cannot use the standard assignment and indexing operators to
+  which you are accustomed in Java when you want to access bits; the
+  smallest unit you can directly address is a byte. So, you must use
+  bitwise operators on bytes to test the values of bits. For your
+  assignment, the bitmap will be stored as a byte array. You may want
+  to brush up on <a
+  href="http://en.wikipedia.org/wiki/Bitwise_operation">bitwise
+  operators</a> and their use <a
+  href="http://java.sun.com/docs/books/tutorial/java/nutsandbolts/op3.html">in
+  java</a>. An important point to remember is that in Java, all types
+  are signed, even bytes. You may have to take the sign bit into
+  account depending on what operations you use for manipulating the
+  bytes in the bitmap.
+</p>
+
+<p class="warning">
+  You may not use <span class="code">java.util.BitSet</span> or any
+  other bit-manipulation classes available on Internet. You also may
+  not &quot;simulate&quot; a bitmap using an array of booleans. You
+  must write your own code for reading and writing the bitmap, and it
+  must pack the free status for 8 blocks into each byte.
+</p>
+
+<h3><a name="indirection">Indirect Blocks</a></h3>
+
+<p>
+  PA3 does not support indirection &quot;out-of-the-box&quot;. Finding
+  the block that contains a byte offset in the file is implemented in
+  the following utility function in MyFileSystem:
+</p>
+
+<pre class="code">/**
+ * Get a DirectBlock object representing the direct block given
+ * the current seek position in the open file identified by fd. A
+ * DirectBlock references the direct block and offset within that
+ * block containing the current seek position.
+ *
+ * If the current seek position is within a hole or beyond the end
+ * of a file, then if create is true then a block will be
+ * allocated to fill the hole. If there is no more free space in
+ * the file system, null will be returned. If the seek position is
+ * in a hole and create is false, then a block containing zeroes
+ * will be returned.
+ *
+ * @param   fd          valid file descriptor of an open file
+ * @param   mode        MODE.w if holes should be filled, MODE.r
+ *                      otherwise (holes will be read as blocks
+ *                      of all zeros)
+ * @returns DirectBlock block and offset in that block where the
+ *                      seek position of fd can be found
+ */
+private DirectBlock getDirectBlock(int fd, MODE mode) {
+}</pre>
+
+<p>
+  In the code provided to you, this function works correctly for the
+  first 10 blocks of the file. Accessing bytes in a logical block
+  number higher than 10 will cause the program to crash. It is up to
+  you to use single-, double-, and triple-indirect blocks to solve
+  this problem. You can read about how indirect pointers work
+  at <a href="system-design/#file-structure">System Design: File
+  Structure</a>.
+</p>
+
+<p class="warning">
+  The purpose of the <span class="code">mode</span> parameter is to
+  allow getDirectBlock to work when writing to holes or beyond the end
+  of a file. Remember that when writing to blocks that are only
+  accessible through indirect blocks, those indirect blocks may need
+  to be allocated along with the direct block where the actual file
+  data is stored.
+</p>
+
+<h3><a name="implementation-notes">Implementation Notes</a></h3>
+
+<p>
+  You may add a new abstraction layer to represent the search for
+  direct blocks, or perhaps a set of direct blocks accessed in a
+  range. Whether or not this simplifies the task in your mind is up to
+  you. However, be careful not to make the project more complex than
+  it needs to be. Your goal is to avoid having to rewrite existing
+  code, and instead add a relatively small amount of new code that
+  adds an important new feature.
+</p>
+
+<h2><a name="testing">Testing</a></h2>
+
+<h3><a name="unit-tests">Unit Tests</a></h3>
+
+<p>
+  Included with the PA3 code are unit tests for MyFileSystem and
+  Bitwise:
+</p>
+
+<ul>
+  <li>TestMyFileSystem.java</li>
+  <li>TestBitwise.java</li>
+</ul>
+
+<p>
+  Running the unit tests is a good idea if you change the provided
+  code significantly. Feel free to add new unit tests if you wish. The
+  unit test files have instructions on how to run them (using JUnit,
+  which is provided as part of the PA3 code). By the way, from a
+  technical standpoint these tests are closer to "integration" tests
+  than unit tests, because they do not test methods in complete
+  isolation, but I'm calling them unit tests since they at least
+  approximate the spirit of modular testing.
+</p>
+
+<p>
+  Note that TestMyFileSystem currently does not have any tests for
+  large files. You may wish to write your own as you work on
+  developing and debugging large file support (single-, double-, and
+  triple-indirection).
+</p>
+
+<h3><a name="command-interpreter">The Command Interpreter</a></h3>
+
+<p>
+  The <span class="code">main</span> method in class <span
+  class="code">Shell</span> implements a simple command interpreter
+  that is useful for testing your file system.  You can either use it
+  interactively by invoking the program as:
+</p>
+
+<pre class="shellcode">java Shell</pre>
+
+<p>
+  or you can have it run a test script by typing, for example:
+</p>
+
+<pre class="shellcode">java Shell test_data/test1.data</pre>
+
+<p>
+  Input lines starting with "/*" or "//" are ignored (the latter are
+  echoed to the output). Other lines have the format:
+</p>
+
+<pre class="code">[ var = ] command [ args ]</pre>
+
+<p>
+  The optional prefix <span class="code">var =</span> causes the
+  result of the command to be assigned to a variable.  In any case,
+  the result of the command is printed.  The there is one command for
+  each of the ten methods of class <span
+  class="code">FileSystem</span> as well as three additional commands:
+  <span class="code">help</span>, <span class="code">vars</span>, and
+  <span class="code">quit</span>.  The <span class="code">help</span>
+  command prints a list of commands, the <span
+  class="code">vars</span> command lists the current values of all
+  interpreter variables that have been assigned values, and the <span
+  class="code">quit</span> command terminates the program.  With the
+  exception of the second argument to <span class="code">write</span>,
+  each argument can be either an integer or the name of a variable.
+  The command:
+</p>
+
+<pre class="code">write fd pattern size</pre>
+
+<p>
+  writes <span class="code">size</span> bytes to the indicated file at
+  the current offset.  The data is generated by repeating <span
+  class="code">pattern</span> over and over the required number of
+  times.
+</p>
+
+<p class="warning">
+  Most of the tests in test_data will not work until you implement
+  large file support. test_data/test1.data is an exception.
+</p>
+
+<h2><a name="how-to-submit">How to Submit</a></h2>
+
+<p>
+  See <a href="../how-to-submit-your-pa">How to submit your
+  programming assignment</a>. Please include all code needed to run
+  your project, not just the files that you modified.
+</p>
+
+<hr id="end" />
+<p class="footer">
+  <a href="..">COSI 31a</a> ::
+  <a href="http://brandeis.edu">Brandeis University</a> ::
+  <a href="http://www.cs.brandeis.edu">Computer Science Department</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"
+      xml:lang="en"
+      class="single-column">
+<head>
+<title>Brandeis University cs31a: Programming Assignment 2</title>
+<link rel="stylesheet" type="text/css" href="../main.css" />
+<link rel="stylesheet" type="text/css" href="../print.css" media="print" />
+</head>
+<body>
+
+<h1>
+  COSI 31a: Fall 2013
+  <div id="subtitle">Programming Assignment 2</div>
+</h1>
+
+<h2>Overview</h2>
+
+<p>
+  Your task is to implement a simulation of anthills and ant-eating animals using
+  Java Threads. There will be few anthills, but many animals. There
+  will be several constraints on how many animals of each type can be
+  eating at an anthill at the same time. After you implement this
+  primary system, you will implement a higher-level anthill controller
+  that will schedule access to the anthills based on a priority system.
+</p>
+
+<p>
+  The project is split into 2 required tasks and 1 extra-credit
+  task. Task 1 requires you to use the synchronized keyword to prevent
+  race conditions. Task 2 requires you to build on your synchronized
+  code and add monitors to avoid busy-waiting and add a scheduler. The
+  extra credit task asks you to use monitors to make the scheduler
+  preemptive.
+</p>
+
+<p class="warning">
+  Task 1 has an earlier due date than Task 2 and the extra-credit
+  assignment. See LATTE for due dates.
+</p>
+
+<h2>Anthill Description</h2>
+
+<p>
+  Any implementation of the Anthill interface must satisfy the
+  following properties:
+</p>
+
+<ul>
+  <li>Only three aardvarks may eat at an anthill at any given time.</li>
+  <li>Only one anteater may eat at an anthill at any given time.</li>
+  <li>Anteaters and aardvarks cannot eat at the same anthill at the same time.</li>
+  <li>Anthills have a limited number of ants and an animal cannot try to eat an ant from an empty anthill</li>
+</ul>
+
+<p>
+  As you know from learning about concurrency, without proper
+  synchronization, these constraints could be violated since a thread
+  may secure permission to eat at an anthill, then be interrupted before
+  it can actually go to the anthill, at which point another thread may also secure
+  permission to eat at the anthill and do so. When the first thread to
+  get permission to eat at the anthill does so, one of the invariants
+  may be violated (e.g., maybe an anteater and aardvark will be eating at the same anthill at
+  the same time).
+</p>
+
+<p>
+  Part of your job in this assignment is to use synchronization to
+  prevent such race conditions from occurring regardless of
+  scheduling.
+</p>
+
+<h2>Code provided to you</h2>
+
+<p class="warning">
+  You must use and may <emph>not</emph> modify any of these files:
+</p>
+
+<ul>
+  <li><a href="Animal.java">Animal.java</a></li>
+  <li><a href="Aardvark.java">Aardvark.java</a></li>
+  <li><a href="Anteater.java">Anteater.java</a></li>
+  <li><a href="Anthill.java">Anthill.java</a></li>
+</ul>
+
+<h3>API Docs</h3>
+
+<p>
+  You will need to understand how all provided code works to solve
+  this problem, even though you will not be allowed to modify it in
+  tasks 1 and 2. You will want to inspect the java files yourself, but
+  to get you started here are the <a href="api">API docs</a> generated
+  with javadoc from the files provided with PA2.
+</p>
+
+<h3>Example</h3>
+
+<p>
+  Here is an example of running an Aardvark in a thread that can eat at a
+  single anthill. This example will not work until you have written the
+  BasicAnthill class:
+  <pre class="code">public class TestAardvark {
+    public static void main(String[] args) {
+        Anthill anthill = new BasicAnthill("0", 10); // you must write BasicAnthill
+        new Thread(new Aardvark("0-Aardvark", anthill)).start();
+    }
+}</pre>
+  This simple example should output the following given a correct
+  implementation of BasicAnthill:
+  <pre class="output">0-Aardvark has started eating at 0 with priority 0
+0-Aardvark has eaten from 0 with priority 0</pre>
+</p>
+
+<h2>Important Note about Disallowed Java Tools</h2>
+
+<p>
+  In PA1, you were instructed to consider using a synchronized class
+  provided by Java for inter-thread communication (BlockingQueue)
+  to solve the problem. For this project, that is <strong>not
+  allowed</strong>; you may not use <strong>any</strong> synchronized
+  data structure included in the Java API. You must write your own
+  (using the &quot;synchronized&quot; keyword). Of course, you can and
+  should use non-synchronized data structures in the Java standard
+  library. You can consult the API docs to see if a data structure is
+  synchronized.
+</p>
+
+<p>
+  You also <strong>may not</strong> use the thread priority methods
+  provided by Java (e.g., you may not use Thread.setPriority).
+</p>
+
+<h2>Task 1: The Basic Anthill</h2>
+
+<h3>Implementation</h3>
+
+<p>
+  You must create a class called BasicAnthill (in a file called
+  BasicAnthill.java) that implements the interface Anthill, and then
+  within that class carry out the following tasks:
+</p>
+
+<ul>
+  <li>Enforce the Anthill Restrictions described above.</li>
+  <li>
+    Use the Java synchronized keyword to prevent race conditions
+    (without introducing deadlock).
+  </li>
+  <li>
+    Display the following output when an animal successfully starts eating at an
+    anthill:
+    <pre class="code">&lt;animal-name&gt; has started eating at &lt;anthill-name&gt; with priority &lt;p&gt;</pre>
+  </li>
+  <li>
+    Display the following output when an animal successfully leaves an
+    anthill:
+    <pre class="code">&lt;animal-name&gt; has eaten at &lt;anthill-name&gt; with priority &lt;p&gt;</pre>
+  </li>
+  <li>
+    The debug output never shows animals having eaten before they have
+    started eating, failing to eat after they have started eating, eating from a
+    different anthill from the one they started eating at, or any other
+    unexpected behavior.
+  </li>
+</ul>
+
+<h3>Required Test</h3>
+
+<p>
+  You are required to implement (and turn in as part of your project)
+  a class called Test1 (in Test1.java) with a main method (so it can
+  be run from the command line) which carries out the following test:
+</p>
+
+<ol>
+  <li>Create 4 BasicAnthills (with 50 ants each), 150 Aardvarks, and 50 Anteaters</li>
+  <li>
+    Name Animals according the code &quot;n-type&quot; where
+    &quot;n&quot; is a unique number from 0 &#8211; 199 (unique over
+    all animals whether they are an Aardvark or an Anteater),
+    &quot;type&quot; is either Aardvark or Anteater.  I.e., Aardvarks are named
+    &quot;0-Aardvark&quot; through &quot;149-Aardvark&quot; and Anteaters are named
+    &quot;150-Anteater&quot; through &quot;199-Anteater&quot;.
+  </li>
+  <li>
+    Name Anthills with consecutive numbers starting from 0 (so the
+    first anthill is named "0", the second is named "1", and so on).
+  </li>
+  <li>
+    Start the Animals in the following order:
+    <ol>
+      <li>50 Aardvarks</li>
+      <li>50 Anteaters</li>
+      <li>100 Aardvarks</li>
+    </ol>
+  </li>
+</ol>
+
+<h2>Task 2: The Priority Scheduler</h2>
+
+<p>
+<em>Remember:</em> You also <strong>may not</strong> use the thread priority methods
+  provided by Java (e.g., you may not use Thread.setPriority).
+</p>
+
+
+<p>
+  You have now successfully programmed BasicAnthill which enforces
+  entry criteria and prevents race conditions. However, there are two
+  problems with the design of BasicAnthill:
+</p>
+
+<ul>
+  <li>
+    While no anthill is available to an Animal, that Animal busy-waits
+    (loops over all anthills repeatedly inside of its run() method).
+  </li>
+  <li>
+    There is no way of prioritizing important animals (say, a queen)
+    over less-important animals (say, a drone).
+  </li>
+</ul>
+
+<h3>Priority Defined</h3>
+
+<ul>
+  <li>Priority is a number between 0 and 4 (inclusive).</li>
+  <li>A higher number means higher priority.</li>
+</ul>
+
+<h3>Implementation</h3>
+
+<p>
+  You must create a class called PriorityScheduler (in
+  PriorityScheduler.java) that implements Anthill and controls access
+  to a collection of Anthills in order to implement the priority
+  scheduling policy described above. The Anthills &quot;behind&quot;
+  the PriorityScheduler will be BasicAnthills. BasicAnthill should be
+  the same class you implemented for the first part of this project.
+</p>
+
+<p>
+  PriorityScheduler will carry out the following tasks:
+</p>
+
+<ul>
+  <li>
+    Keep references to BasicAnthills as private member variables inside
+    PriorityScheduler.
+  </li>
+  <li>
+    When an Animal calls tryToEatAtWithAnimal(animal) on a PriorityScheduler
+    instance, the following algorithm should be run:
+    <ul>
+      <li>
+        <dl>
+          <dt>If</dt>
+          <dd>
+            animal.getPriority() &lt; the highest priority from among
+            all the other animals waiting to eat at an anthill (i.e.,
+            there is another animal with higher priority),
+          </dd>
+          <dt>or</dt>
+          <dd>
+            there are no other animals with higher priority but there
+            are no anthills which the animal can currently eat at,
+          </dd>
+          <dt>then</dt>
+          <dd>
+            the animal thread must wait;
+          </dd>
+          <dt>otherwise</dt>
+          <dd>
+            the animal successfully starts eating at one of the anthills.
+          </dd>
+        </dl>
+    </ul>
+  </li>
+  <li>
+    When an Animal a exits the scheduler by calling exitAnthillWithAnimal on a
+    PriorityScheduler instance, the scheduler must call exitAnthillWithAnimal(a)
+    on the appropriate anthill from the collection of anthills managed
+    by the scheduler (remember, you may <strong>not</strong> modify
+    Animal or any of the other classes provided to you, or
+    BasicAnthill, so you must solve this problem within
+    PriorityScheduler).
+  </li>
+  <li>
+    Use monitors to avoid busy-waiting if an animal cannot find an
+    anthill to eat at.
+  </li>
+  <li>
+    Maximize concurrency by synchronizing only where necessary.
+  </li>
+</ul>
+
+<h3>Required Test</h3>
+
+<p>
+  You are required to implement (and turn in as part of your project)
+  a class called Test2 (in Test2.java) with a main method (so it can
+  be run from the command line) which carries out the following test:
+</p>
+
+<ol>
+  <li>
+    Create 150 aardvarks and 50 anteaters, 2 BasicAnthills, and 1
+    PriorityScheduler which manages the 2 BasicAnthills.
+  </li>
+  <li>Name the Animals and Anthills just as in Test1.</li>
+  <li>
+    Assign priority (n mod 5) to each Animal (where &quot;n&quot; is
+    the unique number 0 &#8211; 199 also used to help name the
+    Animals).
+    <ul>
+      <li>Remember, this means all Animals have priority 0 &#8211; 4</li>
+    </ul>
+  </li>
+  <li>Start the Animals in the same order as Test1</li>
+</ol>
+
+<h2>Extra Credit: Preemptive Scheduler</h2>
+
+<p class="warning">
+  This task is <strong>not</strong> required. If you choose to do it,
+  it will be worth 10% extra credit. Please do not attempt it until
+  you are confident that tasks 1 and 2 are implemented
+  correctly. Please run your design idea by the TA before you start
+  coding the extra credit portion.
+</p>
+
+<p>
+  Your extra credit task is to modify your scheduler to be
+  preemptive. In order to do this, you are allowed to modify the
+  doWhileAtAnthill method and the constructors of the Animal
+  class. The new scheduler class must be called
+  PreemptivePriorityScheduler.
+</p>
+
+<h3>Premption Rules</h3>
+
+<ul>
+  <li>
+    The highest priority value (4) will be reserved for Exterminators
+  </li>
+  <li>
+    An Exterminator may eat at an anthill with any other animals (including
+    an anteater) <strong>except</strong> another Exterminator (i.e., the only
+    time an exterminator must wait is if there is already an exterminator at
+    all anthills).
+  </li>
+  <li>
+    Any time an exterminator wants to eat at an anthill, any animals at
+    that anthill must immediately pull back and wait for the exterminator
+    to do her/his job and leave the anthill. That is, the animals cannot
+    make progress while the Exterminator is
+    at the anthill.
+  </li>
+  <li>
+    Once an exterminator leaves the anthill, animals at the anthill start
+    making progress again.
+  </li>
+  <li>
+    Exterminators do <strong>NOT</strong> decrement the count of ants (they're terrible exterminators).
+  </li>
+</ul>
+
+<h3>Implementation</h3>
+
+<ul>
+  <li>
+    Add new animal type Exterminator with the fastest possible speed.
+  </li>
+    Modify Exterminator.doWhileAtAnthill as follows:
+    <ul>
+      <li>
+        Use monitors to avoid busy-waiting while an exterminator is at an
+        anthill.
+      </li>
+      <li>
+        Use wait(timeout) where the timeout is the same as the
+        parameter to Thread.sleep in the implementation provided to
+        you.
+      </li>
+      <li>
+        Think carefully about what object to lock (remember, a
+        synchronized method locks &quot;this&quot;). You may modify
+        the Animal constructor (or add a new field and setter/getter)
+        if you wish for the purpose of referencing another object to
+        synchronize on.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Here is an example of how Animals wait on an exterminator:
+    <ul>
+      <li>
+        Say an animal takes 100 ms at an anthill, and has currently
+        been there for 50 ms
+      </li>
+      <li>
+        When it is notified that an exterminator is eating at its anthill,
+        it waits indefinitely for the exterminator to leave the anthill
+      </li>
+      <li>
+        When the exterminator notifies it that it has left the anthill,
+        the animal begins its timeout wait again, using whatever time
+        was remaining on the clock from when it was woken up the first
+        time by the exterminator. In other words, the animal calls
+        wait(50).
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Required Test</h3>
+
+<p>
+  You are responsible for writing a test which exercises . Be sure to include enough simultaneous
+  Exterminator threads that sometimes an Exterminator will have to wait.
+</p>
+
+<h2>Hints</h2>
+
+<h3>instanceof operator</h3>
+
+<p>
+  You might find
+  the <a href="http://java.sun.com/docs/books/tutorial/java/nutsandbolts/op2.html">instanceof
+  operator</a> (scroll down a bit on the page that links to)
+  helpful. instanceof can tell you if an object can be downcast from a
+  parent type into a child type. Typically, we don't use it because
+  there are better techniques (polymorphism leverages the type system
+  to do the work for you), but for this problem it will probably help
+  you out.
+</p>
+
+<p>
+  Here is an example:
+  <pre class="code">public class TestInstanceof {
+    public static class Parent {
+    }
+    public static class Child1 extends Parent {
+    }
+    public static class Child2 extends Parent {
+    }
+    
+    public static void main(String[] args) {
+        Parent p1 = new Child1();
+        Parent p2 = new Child2();
+
+        if(p1 instanceof Child1) {
+            System.out.println("p1 is instance of Child1");
+        }
+        if(p1 instanceof Child2) {
+            System.out.println("p1 is instance of Child2");
+        }
+        if(p2 instanceof Child1) {
+            System.out.println("p2 is instance of Child1");
+        }
+        if(p2 instanceof Child2) {
+            System.out.println("p2 is instance of Child2");
+        }
+    }
+}</pre>
+  This outputs:
+  <pre class="output">p1 is instance of Child1
+p2 is instance of Child2</pre>
+</p>
+
+<h3>synchronized blocks</h3>
+
+<p>
+  The following two uses of the synchronized keyword are equivalent:
+  <pre class="code">public synchronized void m() {
+    // ...
+}</pre>
+  <pre class="code">public void m() {
+    synchronized(this) {
+        // ...
+    }
+}</pre>
+  If you want to synchronize the whole method on the lock contained
+  inside of &quot;this&quot;, then it is more elegant to put the
+  synchronized keyword in the signature of the method.
+</p>
+
+<p>
+  Sometimes, you want to synchronize on smaller blocks of code than an
+  entire method. This allows you to limit the amount of
+  synchronization, which can improve performance by <strong>maximizing
+  concurrency</strong>. In this case, putting synchronized in its own
+  block can be the better choice.
+  <pre class="code">public void m() {
+    // a non-critical section
+    synchronized(this) {
+        // a critical section
+    }
+    // a non-critical section
+    synchronized(this) {
+        // a critical section
+    }
+    // a non-critical section
+}</pre>
+</p>
+
+<p>
+  Note that you can synchronize on the lock in any instance, not just
+  &quot;this&quot;. For example:
+  <pre class="code">public class C {
+    private static Object o = new Object();
+
+    public void m() {
+        synchronized(o) {
+            // ...
+        }
+    }
+}</pre>
+  You might not need to synchronize on an instance other than
+  &quot;this&quot; for this project.
+</p>
+
+<h2>How to Submit</h2>
+
+<p>
+  Put all files into a folder named with your unet id (i.e., your
+  email address without the &quot;@brandeis.edu&quot; part). Put that
+  folder into a .zip or .tar.gz archive. Upload the archive to LATTE.
+</p>
+
+<hr id="end" />
+<p class="footer">
+  <a href="..">COSI 31a</a> ::
+  <a href="http://brandeis.edu">Brandeis University</a> ::
+  <a href="http://www.cs.brandeis.edu">Computer Science Department</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+Corey Shapiro:
+
+
+1. Evaluating Expressions
+
+
+a. x/y               x/z         Even though these answers are numerically the same, they are different
+   21/4              21/4.0      in java because the first answer is type int and the second one is  
+   5                 5.0         type double.
+
+b. x+y               "x"+"y"     The answers are different because each problem is dealing with a 
+   21+4              "xy"        different type of data. The first uses type int and the second uses
+   25                            strings.
+
+c. (int)(n/y*y)      (int)n/y*y      The two answers are the same because they both involve the same numerical values 
+   (int)(14.0/4*4)   (int)14.0/4*4   and the one type double in each of them is eventually turned into an integer. 
+   (int)(3.0*4)      14/4*4
+   (int)(12.0)       3*4
+   12                12
+
+d. 11+12+"CS"        "CS"+11+12      The answers are different because once a string becomes involved in an expression      
+   "23CS"            "CS1112"        (which happens according to order of operation, with the string having low    
+                                     precedence like addition), the rest of the input data becomes treated like a 
+                                     string as well. This rule is carried out in the second problem but not the first 
+                                     one because the string is last in the first one.
+
+
+2. Expressions and Assignment Statements
+
+
+a. int num = va1+10
+
+b  va1 = va1*3
+
+c. va1 = num / 100
+
+
+3. Binary Numbers
+
+
+
+a.  1 0 1 0                 1  0  1 1 0 1
+   *8 4 2 1                *32 16 8 4 2 1
+   =8 0 2 0                =32 0  8 4 0 1
+    8+0+2+0=10              32+0+8+4+0+1=45
+  
+
+b. 35/2=17 Remainder=1         71/2=35 Remainder=1         
+   17/2=8  Remainder=1         35/2=17 Remainder=1
+   8/2=4   Remainder=0         17/2=8  Remainder=1
+   4/2=2   Remainder=0         8/2=4   Remainder=0  
+   2/2=0   Remainder=0         4/2=2   Remainder=0
+
+   
+   35(Decimal)=11000(Binary)   71(Decimal)=111000(Binary)
+
+                                             $ 
+                                            111          
+c. i. 10101-11001   ii. -11001=00110  iii. 10101        $. 10
+                              +00001      +00111          +01
+                              =00111      =11100          =11
+
+   iv.10101-11001=11100
+

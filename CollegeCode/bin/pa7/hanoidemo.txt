@@ -1,0 +1,270 @@
+HanoiDemo.java:
+import java.util.*;
+import java.io.*;
+class HanoiDemo{
+
+ private Pole[] poles;
+ private int moves;
+ private int size;
+ private int speed;
+
+ public HanoiDemo(int n, int s){
+   size = n;
+   speed = s;
+   moves = 1;
+   poles = new Pole[3];
+   poles[0] = new Pole(size);
+   poles[1] = new Pole(size);
+   poles[2] = new Pole(size);
+   poles[0].build();
+ }
+
+ public String printDisk(Disk d){
+   String s = "";
+   if(d == null){
+      for(int j = size + 3; j > 0; j--)
+        s += " ";
+      s += "|";
+      for(int j = size + 3; j > 0; j--)
+        s += " ";
+   }
+   else{
+     s += "   ";
+     for(int k = d.getSize(); k < size; k++)
+       s += " ";
+     s += d;
+     for(int k = d.getSize(); k < size; k++)
+       s += " ";
+     s += "   ";
+   }
+   return s;
+ }
+ public String toString(){
+   String s = "";
+   int space = 10;
+   for(int i = 0; i < space; i++)
+     s += "\n";
+   for(int k = size -1; k >= 0; k--){
+    for(int i = 0; i < 3; i++){
+      s += printDisk(getDisk(i, k));
+      if(i < 2)
+        s += "   ";
+    }
+    s += "\n";
+   }
+   String t = "";
+   for(int j = 2*size + 7; j > 0; j--)
+     t += "-";
+   s += t + "   " + t + "   " + t + "\n";
+   return s;
+ }
+
+ public Disk getDisk(int pole, int x){
+   return poles[pole].getDisk(x);
+ }
+
+ public void move(int from, int to){
+   try{
+     Thread.sleep(speed);
+   }catch(InterruptedException E) {E.printStackTrace();}
+   poles[to].add(poles[from].remove());
+   System.out.println(toString());
+
+   System.out.println("moves: " + moves);
+   moves++;
+ }
+
+ public void solveWrap(int disks, String s){
+   if(s.equals("C"))
+     solveClassic(disks, 0, 1, 2);
+   if(s.equals("M"))
+     solveMag(disks, 0, 1, 2);
+ }
+
+ public void solveClassic(int disks, int start, int temp, int end){
+   if(disks==1){
+     move(start,end);
+     if(moves < Math.pow(2, size))
+       for(int m = 0; m < 8; m++)
+          System.out.println();
+   }
+   else{
+     solveClassic(disks-1, start, end, temp);
+     move(start,end);
+     if(moves < Math.pow(2, size))
+       for(int m = 0; m < 8; m++)
+          System.out.println();
+     solveClassic(disks-1, temp, start, end);
+   }
+ }
+
+ public void solveMag(int disks, int start, int temp, int end){
+   if(disks==1){
+     poles[start].getTopDisk().flip();
+     move(start, end);
+     if(moves <= (Math.pow(3, size) -1)/2)
+       for(int m = 0; m < 8; m++)
+          System.out.println();
+   }
+   else{
+     solveMag(disks-1, start, end, temp);
+     poles[start].getTopDisk().flip();
+     move(start,end);
+     if(moves <= (Math.pow(3, size) -1)/2)
+       for(int m = 0; m < 8; m++)
+          System.out.println();
+     solveMag(disks-1, temp, end, start);
+     solveMag(disks-1, start, temp, end);
+   }
+ }
+
+ public static void main(String[] args){
+   System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\nMake sure the terminal window is well outside the towers' bases.");
+   System.out.println("\nDisks are made of \"A\"'s or \"V\"'s to represent the two magnetic orientations.\n\n");
+   int x = 0;
+   int sp = 1000;
+   String s = "";
+   HanoiDemo h;
+   //System.out.println(h.printDisk(new Disk(3, "up")));
+   BufferedReader bin = new BufferedReader( new InputStreamReader(System.in));
+
+   while(true) {
+     System.out.println("\nEnter each of the following (hit enter after each):");
+     System.out.println("\n1. Number of disks (-1 to quit).");
+     System.out.println("2. C or M for classic or magnetic.");
+     System.out.println("3. The number of milliseconds between moves (an integer).");
+     try {
+       x = Integer.parseInt( bin.readLine() );
+       if(x==-1)
+         break;
+       s = bin.readLine();
+       sp = Integer.parseInt(bin.readLine());
+     }
+     catch (IOException e) { x = -1;}
+     h = new HanoiDemo(x, sp);
+     System.out.println(h);
+     System.out.println("moves: 0");
+     for(int m = 0; m < 8; m++)
+        System.out.println();
+     h.solveWrap(x, s);
+   }
+ }
+}
+
+
+
+
+Disk.java:
+
+public class Disk{
+ private String orientation;
+ private int size;
+
+ public Disk(int newSize, String newOr){
+   size = newSize;
+   if(newOr.equals("V") || newOr.equalsIgnoreCase("down"))
+     orientation = "V";
+   else if(newOr.equals("A") || newOr.equalsIgnoreCase("up"))
+     orientation = "A";
+ }
+
+ public String toString(){
+   String s = "";
+  for(int y = 2*size; y > 0; y--){
+     if(size==y)
+       s+="|";
+     s+=orientation;
+   }
+   return s;
+ }
+ public void flip(){
+   if(orientation.equals("A"))
+     orientation = "V";
+   else if(orientation.equals("V"))
+     orientation = "A";
+ }
+
+ public int getSize(){
+   return size;
+ }
+
+ public static void main(String[] args){
+   Disk d = new Disk(1, "Up");
+   System.out.println(d + " " + d.orientation);
+   d.flip();
+   System.out.println(d.orientation);
+  // String s = "hi ";
+  // System.out.println(s+d);
+ }
+}
+
+Pole.java
+
+import java.util.*;
+public class Pole{
+ private Disk[] disks;
+ private int size;
+ private int curInd;
+
+ public Pole(int n){
+   disks = new Disk[n];
+   size = n;
+   curInd = 0;
+ }
+
+ public String toString(){
+   String s = "";
+   for(int x = size-1; x>-1; x--){
+     for(int i = x+3; i>0; i--)
+       s += " ";
+     s += disks[x];
+     for(int i = x+3; i>0; i--)
+       s += " ";
+     s += "\n";
+   }
+   for(int j = 2*size + 7; j > 0; j--)
+     s += "-";
+   s += "\n";
+   return s;
+ }
+
+ public Disk getDisk(int n){
+   return disks[n];
+ }
+
+ public void add(Disk d){
+   disks[curInd] = d;
+   curInd++;
+ }
+
+ public Disk getTopDisk(){
+   int x = 0;
+   while(disks[x]!=null){
+     if(disks[size -1] != null)
+       return disks[size-1];
+     x++;
+   }
+   if(x == 0)
+     return null;
+   return disks[x-1];
+ }
+
+ public Disk remove(){
+   if(curInd == 0)
+     return null;
+   curInd--;
+   Disk d = disks[curInd];
+   disks[curInd] = null;
+   return d;
+ }
+
+ public void build(){
+   for(int x = size; x > 0; x--)
+     add(new Disk(x, "A"));
+ }
+ public static void main(String[] args){
+   Pole p = new Pole(5);
+   p.add(new Disk(3, "up"));
+   p.add(new Disk(2, "up"));
+   System.out.print(p.getTopDisk());
+ }
