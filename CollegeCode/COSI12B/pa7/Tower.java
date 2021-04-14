@@ -15,7 +15,7 @@ public class Tower {
 			moves = 0;
 			size = 0;
 			Scanner console = new Scanner(System.in);
-			System.out.println("Enter number of disks (as an integer) or a number less than 1 to quit).");
+			System.out.println("Enter number of disks (as an integer) or a number less than 1 to quit.");
 			size = console.nextInt();
 			System.out.println();
 			if (size > 0) {
@@ -43,9 +43,6 @@ public class Tower {
 			}
 		}	
 	}			
-			
-			
-			
 			
 			
 			

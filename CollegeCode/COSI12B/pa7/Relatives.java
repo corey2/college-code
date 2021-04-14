@@ -9,7 +9,7 @@ public class Relatives {
 		    //creates access to file
 			System.out.println("Enter input file:");
 			Scanner console = new Scanner(System.in);
-			String file = console.nextLine();
+			String file = "COSI12B/pa7/"+console.nextLine();
 			Scanner input = new Scanner(new File(file));
 			
 			//takes a name as input from the user

@@ -30,7 +30,7 @@ public class Aviary {
 
 			// tell each bird to fly and redraw the bird
 			//for (Bird bird: birds) {
-			for (int i=0; i<birds.length;i++){
+			for (int i=0; i<birds.length; i++){
 				Bird bird = birds[i];
 				bird.fly();
 				g.setColor(bird.getColor());

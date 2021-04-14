@@ -8,7 +8,7 @@ import java.util.*;
 public class Hummingbird extends AbstractBird
 	implements Bird, AviaryConstants {
 	
-	private Random rand;
+	private Random rand = new Random();
 	
 	public Hummingbird(int x, int y) {
 		setColor(Color.MAGENTA);

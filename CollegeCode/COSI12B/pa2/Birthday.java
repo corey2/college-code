@@ -1,15 +1,16 @@
-package pa2B;
+package pa2;
 import java.util.*;
 
-public class Birthday2 {
+public class Birthday {
 	  public static void main(String[]args) {
-	 	    Scanner console = new Scanner(System.in);
-        System.out.println("What month, day, and year were you born?");
+		    Scanner console = new Scanner(System.in);
+	 	    System.out.println("What month, day, and year were you born?");
 		    int month = console.nextInt();
 		    int day = console.nextInt();
 		    int year = console.nextInt();		    
 		    Date date = new Date(year, month, day);
 		    Date today = new Date();
+		    //System.out.println(today.toString());
 		    display(date);
 		    int wait=getWait(date);
 	      if (wait==0) {
@@ -19,6 +20,7 @@ public class Birthday2 {
 	      }
 	      int daysOfLife=getDaysOfLife(date);
 	      System.out.println("Your are "+daysOfLife+" days old.");
+	      console.close();
 	  } 
 	
 	  public static void display(Date date) {  //displays all of the information that can be retrieved from the object with a single method call

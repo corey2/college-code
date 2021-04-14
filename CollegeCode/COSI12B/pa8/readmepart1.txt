@@ -1,6 +1,6 @@
 Corey Shapiro
 4-27-12
-HW#7
+HW#8
 
 	This folder contains AffectionNode, which represents
 people playing the game Affection, AffectionMain, which stages

@@ -14,8 +14,8 @@ public class ShowTextFileDifferences {
     String file1 = console.next();
     System.out.println("Enter second file name:");
     String file2 = console.next();
-    Scanner input1 = new Scanner(new File("src/pa7/"+file1));
-    Scanner input2 = new Scanner(new File("src/pa7/"+file2));
+    Scanner input1 = new Scanner(new File("COSI11A/pa7/"+file1));
+    Scanner input2 = new Scanner(new File("COSI11A/pa7/"+file2));
     theFiles(input1, input2);
     console.close();
   }

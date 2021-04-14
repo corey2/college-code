@@ -17,11 +17,11 @@ negative values. Catalog represents the items that a retailer has available
 for sale. Catalog is effectively an ArrayList that stores a name and has 
 limited access to the repretoire of usual ArrayList methods. ItemOrder 
 represents an order of a given quantity of a given item. It can return 
-certain parts of its state, find its total priice, print itself, and compare
+certain parts of its state, find its total price, print itself, and compare
 itself to other ItemOrder objects in terms of quantity. The final class is 
 ShoppingCart, which is essentially an ArrayList of ItemOrders. It has the
 special abilities of sorting itself by quantity, finding the total price
-of all of its componants, and printing all the componants in one large chunk, 
+of all of its components, and printing all the components in one large chunk, 
 each with only the call of a single method. Its hardest to program and 
 therefore most impressive ability is an interesting expansion of the more 
 basic ArrayList add method. The ShoppingCart will add a new potential

@@ -1,14 +1,13 @@
-package pa2B;
-import java.util.*;
+package pa2;
 
 public class Date {
 	private int day;
 	private int month;
 	private int year;
-	final int daysSinceEpoch = 15386; //TeacherDate.getDaysSinceEpoch()
+	final int daysSinceEpoch = 18728; //Go to Days Since 1970-01-01 of https://www.epochconverter.com/seconds-days-since-y0 to find this value
 	
 	public Date(int year, int month, int day) {
-		this.year=year;
+	  this.year=year;
 	  this.month=month;
 	  this.day=day;
 	}
@@ -19,7 +18,7 @@ public class Date {
 		year = (int)(1970 + (daysSinceEpoch/365.25));            //this equation finds the years since 1970 and adds this answer to 1970 to get the current year
 		int yearDiff = (int) (daysSinceEpoch/365.25);           //the difference between this year and 1970 as a positive number
 		int daysTillYear =(int)(yearDiff*365.25);               //the number of days from 1970 until the beginning of this year is found with this equation
-		int totaldays = (int) (daysSinceEpoch-daysTillYear);
+		//int totaldays = (int) (daysSinceEpoch-daysTillYear);
 		while (daysTillYear<daysSinceEpoch) {  //changes daysTillYear until it meets today, with the date adjusting as it approaches today 
 			nextDay();
 		  daysTillYear++;

@@ -54,9 +54,9 @@ public class Item {
 	public String toString() {
 		NumberFormat nf = NumberFormat.getCurrencyInstance();
 		if (quantityB==0) {
-			return name+", $"+nf.format(price);
+			return name+", "+nf.format(price);
 		} else {
-			return name+", $"+price+" ("+quantityB+" for $"+nf.format(priceB)+")";
+			return name+", "+nf.format(price)+" ("+quantityB+" for "+nf.format(priceB)+")";
 		}
 	}
 

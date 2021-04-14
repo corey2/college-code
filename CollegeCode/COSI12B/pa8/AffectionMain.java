@@ -14,7 +14,7 @@ import java.util.*;
     the game is over. */
 public class AffectionMain {
     /** input file name from which to read data */
-    public static final String INPUT_FILENAME = "names.txt";
+    public static final String INPUT_FILENAME = "COSI12B/pa8/names.txt";
     
     /** true for different results every run; false for predictable results */
     public static final boolean RANDOM = true;

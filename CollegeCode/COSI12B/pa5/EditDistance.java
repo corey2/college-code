@@ -1,4 +1,6 @@
+//Doesn't work
 package pa5;
+
 
 import java.io.*;
 import java.util.*;
@@ -16,7 +18,7 @@ public class EditDistance {
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("Please type the name of the dictionary file you would like to use:");
 		Scanner console = new Scanner(System.in);
-		Scanner input = new Scanner(new File(console.next()));
+		Scanner input = new Scanner(new File("COSI12B/pa5/"+console.next()));
 		TreeMap<String, Set<String>> words = setMap(input);
 		boolean done = false;
 		while (!done) {
@@ -128,8 +130,10 @@ public class EditDistance {
 				if (visitees.isEmpty()) {
 					return "No solution";
 				}
+				System.out.println("Visitees: "+visitees);
 				visitees.remove(w1);
 				w1=visitees.get(0);
+				
 			
 			}
 			return "Edit distance = "+count;

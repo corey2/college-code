@@ -3,7 +3,7 @@ Corey Shapiro
 HW#3
 	
      This folder contains the code for a class called RegularTicket,
-its subclasses, and a client program that demonstrates the capibilities 
+its subclasses, and a client program that demonstrates the capabilities 
 of these classes. The regular ticket holds its identification number and
 price as fields, and has methods to allow other programs to retrieve its
 data and one that prints the data as a string. Its price must be 

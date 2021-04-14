@@ -1,4 +1,4 @@
-/*
+//Don't have a properly implemented Person class
 package pa6;
 
 import java.io.File;
@@ -321,7 +321,7 @@ public class Marriage {
 					if (thus.getSpouse().equals("free")) {
 						System.out.println(m.getName()+" -- nobody");
 					} else {	
-						woman = thus.getSpouse();
+						woman = (String) thus.getSpouse();
 				
 						Person spouseP = matchNameToWoman.get(woman); 
 				
@@ -351,4 +351,3 @@ public class Marriage {
 
 }  //class
 
-*/
